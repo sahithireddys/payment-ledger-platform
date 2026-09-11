@@ -3,7 +3,7 @@
 CREATE TABLE accounts (
     id              UUID PRIMARY KEY,
     owner_name      VARCHAR(255)   NOT NULL,
-    currency        CHAR(3)        NOT NULL,
+    currency        VARCHAR(3)     NOT NULL,
     balance         NUMERIC(19,4)  NOT NULL CHECK (balance >= 0),
     created_at      TIMESTAMPTZ    NOT NULL DEFAULT now(),
     updated_at      TIMESTAMPTZ    NOT NULL DEFAULT now()
@@ -14,7 +14,7 @@ CREATE TABLE payments (
     from_account_id     UUID           NOT NULL REFERENCES accounts(id),
     to_account_id       UUID           NOT NULL REFERENCES accounts(id),
     amount              NUMERIC(19,4)  NOT NULL CHECK (amount > 0),
-    currency            CHAR(3)        NOT NULL,
+    currency            VARCHAR(3)     NOT NULL,
     status              VARCHAR(20)    NOT NULL,
     idempotency_key     VARCHAR(255),
     failure_reason      VARCHAR(255),

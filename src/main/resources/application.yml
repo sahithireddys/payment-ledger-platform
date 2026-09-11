@@ -1,0 +1,88 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: payment-ledger-platform
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/payment_ledger}
+    username: ${DB_USER:pll}
+    password: ${DB_PASSWORD:pll}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+      minimum-idle: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        format_sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 5
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+    listener:
+      ack-mode: manual
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+
+app:
+  payments:
+    submitted-topic: payments.submitted
+    completed-topic: payments.completed
+    failed-topic: payments.failed
+    submitted-dlt-topic: payments.submitted.DLT
+    partitions: 3
+    idempotency-ttl-hours: 24
+    balance-cache-ttl-seconds: 30
+  outbox:
+    poll-interval-ms: 100
+    batch-size: 200
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  health:
+    redis:
+      enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.sahithireddy.paymentledger: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

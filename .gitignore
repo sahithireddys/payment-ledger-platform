@@ -1,0 +1,12 @@
+target/
+*.class
+*.log
+.idea/
+*.iml
+.vscode/
+.DS_Store
+.env
+loadtest/results/*
+!loadtest/results/.gitkeep
+loadtest/accounts.json
+HELP.md

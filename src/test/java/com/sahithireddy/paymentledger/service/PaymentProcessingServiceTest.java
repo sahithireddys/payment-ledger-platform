@@ -131,13 +131,17 @@ class PaymentProcessingServiceTest {
     }
 
     @Test
-    void accountLocksAreAlwaysAcquiredInAscendingIdOrder_evenWhenPaymentDirectionIsReversed() {
-        // Force `to` to have the lower id, so it must be locked FIRST even
-        // though it is the *destination*, not the source, of this payment.
-        // This is what prevents two transfers moving money in opposite
-        // directions between the same two accounts from deadlocking.
+    void accountLocksAreAlwaysAcquiredInAConsistentOrder_evenWhenPaymentDirectionIsReversed() {
+        // Force `to` to have the id that sorts first (per UUID.compareTo,
+        // which compares the two 64-bit halves as SIGNED longs — a UUID
+        // starting with 8-f has its sign bit set and sorts as negative, so
+        // "0000...1" sorts before "7fff...", not "ffff..." as naive
+        // lexicographic intuition would suggest). `to` must be locked FIRST
+        // here even though it is the *destination*, not the source, of this
+        // payment — that's what prevents two transfers moving money in
+        // opposite directions between the same two accounts from deadlocking.
         UUID lowId = UUID.fromString("00000000-0000-0000-0000-000000000001");
-        UUID highId = UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff");
+        UUID highId = UUID.fromString("7fffffff-ffff-ffff-ffff-ffffffffffff");
         to.setId(lowId);
         from.setId(highId);
         payment.setFromAccountId(highId);

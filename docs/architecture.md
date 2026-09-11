@@ -23,7 +23,7 @@ sequenceDiagram
     end
 
     Kafka->>Consumer: payments.submitted (consumer group: ledger-processor)
-    Consumer->>DB: lock both accounts (ascending id order)
+    Consumer->>DB: lock both accounts (consistent id order)
     Consumer->>DB: debit / credit + 2 ledger_entries + payment=COMPLETED [one transaction]
     Consumer->>DB: INSERT processed_payment_events (idempotency guard)
     Consumer->>DB: INSERT outbox_event (payments.completed)
@@ -65,8 +65,13 @@ so a duplicate delivery is a guaranteed no-op.
 A→B and a concurrent transfer B→A both need to lock accounts A and B. Locking
 in submission order would let one hold A while waiting for B, and the other
 hold B while waiting for A — a deadlock. Both transactions instead always
-lock the lower account id first, so they queue behind each other in a
-sensible order instead of deadlocking.
+lock the two accounts in the same order — whichever id sorts first per
+`UUID.compareTo` — so they queue behind each other in a consistent order
+instead of deadlocking. (`UUID.compareTo` isn't naive lexicographic
+ordering — it compares the two 64-bit halves as *signed* longs, so which id
+"sorts first" isn't always the one that looks smaller as a string. That
+surfaced as a genuinely confusing test failure while building this — see the
+comment on `PaymentProcessingService` for the detail.)
 
 **Partitioning by source account preserves per-account ordering.** Kafka
 only guarantees ordering within a partition. Keying `payments.submitted` by

@@ -15,9 +15,10 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
     /**
      * Row-level lock (SELECT ... FOR UPDATE) used by the ledger processor
      * before mutating a balance. Callers must always acquire locks on
-     * multiple accounts in a consistent (id-ascending) order to avoid
-     * deadlocking with a concurrent transfer running in the opposite
-     * direction between the same two accounts.
+     * multiple accounts in a single consistent order (see
+     * {@link com.sahithireddy.paymentledger.service.PaymentProcessingService})
+     * to avoid deadlocking with a concurrent transfer running in the
+     * opposite direction between the same two accounts.
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select a from Account a where a.id = :id")

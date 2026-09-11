@@ -24,10 +24,16 @@ import java.util.UUID;
  * or where a ledger entry exists without an updated balance.
  *
  * <p>Concurrency safety: both accounts involved are locked with
- * {@code SELECT ... FOR UPDATE}, always in ascending id order. Two transfers
- * that both touch accounts A and B — even in opposite directions — always
- * acquire their locks in the same order, so neither can deadlock waiting on
- * the other.
+ * {@code SELECT ... FOR UPDATE}, always in the same order — whichever
+ * account id sorts first per {@link UUID#compareTo}. (Note that isn't the
+ * same as naive lexicographic/numeric ordering: {@code UUID.compareTo}
+ * compares the two 64-bit halves as <em>signed</em> longs, so a UUID whose
+ * first hex digit is 8-f has its sign bit set and sorts as negative — e.g.
+ * {@code ffff...} sorts before {@code 0000...}. All that matters here is
+ * that the order is total and consistent, not which id "looks" bigger.)
+ * Two transfers that both touch accounts A and B — even in opposite
+ * directions — always acquire their locks in that same order, so neither
+ * can deadlock waiting on the other.
  *
  * <p>Idempotency: before touching any balance, this checks
  * {@code processed_payment_events} for the payment id. Kafka's at-least-once

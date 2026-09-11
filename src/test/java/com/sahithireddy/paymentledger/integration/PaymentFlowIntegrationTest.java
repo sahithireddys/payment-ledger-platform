@@ -7,7 +7,7 @@ import com.sahithireddy.paymentledger.api.dto.PaymentDtos.PaymentResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -62,7 +62,7 @@ class PaymentFlowIntegrationTest {
         registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379));
     }
 
-    @LocalServerPort
+    @Value("${local.server.port}")
     private int port;
 
     private final TestRestTemplate rest = new TestRestTemplate();

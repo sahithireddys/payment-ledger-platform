@@ -35,7 +35,7 @@ public class PaymentNotificationListener {
             ack.acknowledge();
         } catch (Exception e) {
             log.error("Error processing payments.completed record at offset {}: {}", record.offset(), e.getMessage(), e);
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 
@@ -49,7 +49,7 @@ public class PaymentNotificationListener {
             ack.acknowledge();
         } catch (Exception e) {
             log.error("Error processing payments.failed record at offset {}: {}", record.offset(), e.getMessage(), e);
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 }

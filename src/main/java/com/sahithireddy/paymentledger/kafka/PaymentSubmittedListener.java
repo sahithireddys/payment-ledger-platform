@@ -37,7 +37,7 @@ public class PaymentSubmittedListener {
             log.error("Error processing payments.submitted record at offset {}: {}", record.offset(), e.getMessage(), e);
             // Do not ack: DefaultErrorHandler (configured in KafkaConsumerConfig) will
             // retry with backoff, then route to the dead-letter topic if it keeps failing.
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 }

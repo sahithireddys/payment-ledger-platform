@@ -12,12 +12,14 @@ import com.sahithireddy.paymentledger.repository.LedgerEntryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -67,6 +69,17 @@ public class AccountService {
 
     public void invalidateBalanceCache(UUID accountId) {
         redisTemplate.delete(BALANCE_CACHE_PREFIX + accountId);
+    }
+
+    /**
+     * Plain DB reads (not cache-aside like {@link #getAccount}) — this backs
+     * the frontend's account picker/list, where a handful of milliseconds of
+     * staleness on a balance is irrelevant and simplicity wins.
+     */
+    public List<AccountResponse> listAccounts() {
+        return accountRepository.findAll(Sort.by(Sort.Direction.ASC, "createdAt")).stream()
+            .map(this::toResponse)
+            .toList();
     }
 
     public Page<LedgerEntryResponse> getLedger(UUID accountId, Pageable pageable) {

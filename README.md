@@ -74,6 +74,13 @@ curl -s localhost:8080/api/v1/payments/<paymentId>
 curl -s "localhost:8080/api/v1/accounts/$ALICE/ledger"
 ```
 
+## Frontend
+
+A small React + Vite dashboard lives in [`frontend/`](frontend/) — create accounts, send payments, and watch
+them settle asynchronously against this backend in real time. See
+[`frontend/README.md`](frontend/README.md) to run it (`cd frontend && npm install && npm run dev`, backend must
+already be running).
+
 ## Testing
 
 ```bash
@@ -158,4 +165,5 @@ src/main/resources/db/migration/   Flyway schema + seed data
 src/test/                          Unit tests + Testcontainers integration tests
 loadtest/                          k6 load test + account-seeding script
 docs/architecture.md               Full request flow + design rationale
+frontend/                          React + Vite dashboard (optional UI, see frontend/README.md)
 ```
